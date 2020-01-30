@@ -1,0 +1,141 @@
+[{
+        "model": "api.team",
+        "pk": 1,
+        "fields": {
+            "name": "Liverpool"
+        }
+    },
+    {
+        "model": "api.team",
+        "pk": 2,
+        "fields": {
+            "name": "Man. City"
+        }
+    },
+    {
+        "model": "api.team",
+        "pk": 3,
+        "fields": {
+            "name": "Leicester City"
+        }
+    },
+    {
+        "model": "api.team",
+        "pk": 4,
+        "fields": {
+            "name": "Chelsea"
+        }
+    },
+    {
+        "model": "api.team",
+        "pk": 5,
+        "fields": {
+            "name": "Man. United"
+        }
+    },
+    {
+        "model": "api.team",
+        "pk": 6,
+        "fields": {
+            "name": "Tottenham"
+        }
+    },
+    {
+        "model": "api.team",
+        "pk": 7,
+        "fields": {
+            "name": "Wolves"
+        }
+    },
+    {
+        "model": "api.team",
+        "pk": 8,
+        "fields": {
+            "name": "Sheff Utd"
+        }
+    },
+    {
+        "model": "api.team",
+        "pk": 9,
+        "fields": {
+            "name": "Southampton"
+        }
+    },
+    {
+        "model": "api.team",
+        "pk": 10,
+        "fields": {
+            "name": "Arsenal"
+        }
+    },
+    {
+        "model": "api.team",
+        "pk": 11,
+        "fields": {
+            "name": "Crystal Palace"
+        }
+    },
+    {
+        "model": "api.team",
+        "pk": 12,
+        "fields": {
+            "name": "Everton"
+        }
+    },
+    {
+        "model": "api.team",
+        "pk": 13,
+        "fields": {
+            "name": "Burnley FC"
+        }
+    },
+    {
+        "model": "api.team",
+        "pk": 14,
+        "fields": {
+            "name": "Newcastle"
+        }
+    },
+    {
+        "model": "api.team",
+        "pk": 15,
+        "fields": {
+            "name": "Brighton"
+        }
+    },
+    {
+        "model": "api.team",
+        "pk": 16,
+        "fields": {
+            "name": "Aston Villa"
+        }
+    },
+    {
+        "model": "api.team",
+        "pk": 17,
+        "fields": {
+            "name": "West Ham"
+        }
+    },
+    {
+        "model": "api.team",
+        "pk": 18,
+        "fields": {
+            "name": "Bournemouth"
+        }
+    },
+    {
+        "model": "api.team",
+        "pk": 19,
+        "fields": {
+            "name": "Watford"
+        }
+    },
+    {
+        "model": "api.team",
+        "pk": 20,
+        "fields": {
+            "name": "Norwich City"
+        }
+    }
+]

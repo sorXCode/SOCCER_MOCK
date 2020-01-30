@@ -21,6 +21,8 @@ class GenerateTokenMixin:
             "access": access
         }
         return data
+
+
 class UserAccount(GenerateTokenMixin, User):
 
     class Meta:
@@ -32,6 +34,7 @@ class UserAccount(GenerateTokenMixin, User):
 
     def get_absolute_url(self):
         return reverse("useraccount_detail", kwargs={"pk": self.pk})
+
 
 class Staff(GenerateTokenMixin, User):
 
@@ -45,9 +48,9 @@ class Staff(GenerateTokenMixin, User):
     def get_absolute_url(self):
         return reverse("staffaccount_detail", kwargs={"pk": self.pk})
 
-class Team(models.Model):
 
-    name = models.CharField(max_length=80)
+class Team(models.Model):
+    name = models.CharField(max_length=80, unique=True)
 
     class Meta:
         verbose_name = _("team")
@@ -55,6 +58,17 @@ class Team(models.Model):
 
     def __str__(self):
         return self.name
+    
+    @classmethod
+    def update_team_name(cls, old_name, new_name):
+        try:
+            team = cls.objects.get(name=old_name)
+            team.name = new_name
+            team.save()
+            return {"detail": f"{old_name} changed to {new_name}"}
+        except cls.DoesNotExist:
+            return {"detail": f"{old_name} does not exist"}
+
 
     def get_absolute_url(self):
         return reverse("team_detail", kwargs={"pk": self.pk})
@@ -62,13 +76,12 @@ class Team(models.Model):
 
 class Fixture(models.Model):
 
-    home_team = models.ForeignKey(Team, related_name='home_team', on_delete=models.CASCADE)
-    away_team = models.ForeignKey(Team, related_name='away_team', on_delete=models.CASCADE)
+    home_team = models.ForeignKey(
+        Team, related_name='home_team', on_delete=models.CASCADE)
+    away_team = models.ForeignKey(
+        Team, related_name='away_team', on_delete=models.CASCADE)
     date_time = models.DateTimeField(blank=False)
     fixed_at = models.DateTimeField(auto_now_add=True)
-    fixed_by = models.ForeignKey(Staff, on_delete=models.CASCADE)
-
-
 
     class Meta:
         verbose_name = _("fixture")

@@ -15,6 +15,8 @@ urlpatterns = [
     path('fixtures/', views.FixturesList.as_view(), name='fixtures'),
     path('home/', views.HomeView.as_view(), name='home'),
     path('login/', views.AccountLogin.as_view(), name='login'),
+    path('teams/', views.TeamsList.as_view(), name='teams'),
+
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
