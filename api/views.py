@@ -8,9 +8,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
 from rest_framework_simplejwt import views as jwt_views
-from django.http import HttpResponseRedirect, HttpResponse
-import requests
-from django.urls import reverse
+# from django.http import HttpResponseRedirect, HttpResponse
 
 class AccountSignup(APIView):
     # model = UserAccount
