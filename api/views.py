@@ -21,17 +21,18 @@ def post_serializer(serializer):
 
 def get_serializer_data(model, serializer):
     objects = model.objects.all()
-    serializer = TeamSerializer(objects, many=True)
+    serializer = serializer(objects, many=True)
+
     return Response(serializer.data)
 
-def parse_object_update_request(request):
-    required_fields = ['old_name', 'new_name', ]
+
+def parse_object_update_request(request, required_fields):
     message = "This field is required"
-    error_message = {field: [
-        message, ] for field in required_fields if field not in request.data.keys()}
+    provided_fields = request.data.keys()
+    error_message = {field: [message, ] for field in required_fields
+                     if field not in provided_fields}
     if error_message:
         return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class AccountSignup(APIView):
@@ -40,7 +41,7 @@ class AccountSignup(APIView):
     def post(self, request, format=None, **kwargs):
         serializer = UserAccountSerializer(
             data=request.data) if not kwargs['is_staff'] else\
-                StaffSerializer(data=request.data)
+            StaffSerializer(data=request.data)
 
         return post_serializer(serializer)
 
@@ -50,19 +51,10 @@ class AccountLogin(jwt_views.TokenObtainPairView):
         return super().post(request)
 
 
-class TeamsList(APIView):
-    permission_classes = (IsAuthenticated, IsAdminUser,)
-    """
-    Creates, Retrieve, update or delete a team instance.
-    """
-    model = Team
-    serializer_class = TeamSerializer
+class TeamsAndFixturesMixin(APIView):
 
-    def get_object(self, name):
-        try:
-            return self.model.objects.get(name=name)
-        except self.model.DoesNotExist:
-            raise Http404
+    def get_object(self, identifier=None):
+        raise NotImplementedError
 
     def get(self, request):
         return get_serializer_data(model=self.model, serializer=self.serializer_class)
@@ -72,28 +64,57 @@ class TeamsList(APIView):
         return post_serializer(serializer)
 
     def put(self, request, *args, **kwargs):
+        raise NotImplementedError
+
+    def delete(self, request, *args, **kwargs):
+        object_name = request.data['name']
+        team = self.get_object(identifier=object_name)
+        team.delete()
+        return Response({"detail": f"{object_name} deleted"}, status=status.HTTP_202_ACCEPTED)
+
+
+class TeamsList(TeamsAndFixturesMixin):
+    """
+    Creates, Retrieve, update or delete a team instance.
+    """
+    permission_classes = (IsAuthenticated, IsAdminUser,)
+    model = Team
+    serializer_class = TeamSerializer
+
+    def get_object(self, identifier):
+        try:
+            return self.model.objects.get(name=identifier)
+        except self.model.DoesNotExist:
+            raise Http404
+
+    def put(self, request):
         try:
             old_name = request.data['old_name']
             new_name = request.data['new_name']
         except KeyError:
-            return parse_object_update_request(request)
-        return Response(model.update_team_name(old_name=old_name, new_name=new_name))
+            return parse_object_update_request(request, required_fields=['old_name', 'new_name', ])
+        return Response(self.model.update_team_name(old_name=old_name, new_name=new_name))
 
 
+class FixturesList(TeamsAndFixturesMixin):
+    permission_classes = (IsAuthenticated, IsAdminUser,)
+    model = Fixture
+    serializer_class = FixtureSerializer
 
-    def delete(self, request, *args, **kwargs):
-        team_name = request.data['name']
-        team = self.get_object(name=team_name)
-        team.delete()
-        return Response({"detail": f"{team_name} deleted"}, status=status.HTTP_202_ACCEPTED)
+    # implement unique for date for fixtures
 
+    def get_object(self, identifier):
+        try:
+            return self.model.objects.get(link_address=identifier)
+        except self.model.DoesNotExist:
+            raise Http404
 
+    def put(self, request, *args, **kwargs):
+        args = {"link_address": request.data['link_address']}
 
-# class FixturesList(APIView):
-#     model = Fixture
-#     serializer_class = FixtureSerializer
-#     def get(self, request, format=None):
-#         return get_serializer_data(model=self.model, serializer=self.serializer_class)
+def edit_fixture(request, *args, **kwargs):
+    link_address = args[link_address]
+    return Response(link_address)
 
 
 class HomeView(APIView):
