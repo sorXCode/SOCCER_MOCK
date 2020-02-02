@@ -1,3 +1,4 @@
+from datetime import datetime
 from api.models import UserAccount, Staff, Team, Fixture
 from api.serializers import (
     UserAccountSerializer, StaffSerializer, TeamSerializer, FixtureSerializer)
@@ -6,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-
+from rest_framework.decorators import api_view, permission_classes
 
 from rest_framework_simplejwt import views as jwt_views
 # from django.http import HttpResponseRedirect, HttpResponse
@@ -98,6 +99,13 @@ class TeamsList(TeamsAndFixturesMixin):
         team.delete()
         return Response({"detail": f"{object_name} deleted"}, status=status.HTTP_202_ACCEPTED)
 
+@api_view(['GET',])
+@permission_classes([IsAuthenticated,])
+def teams_list(request, format=None, *args, **kwargs):
+    model = Team
+    serializer_class = TeamSerializer
+    return get_serializer_data(model=model, serializer=serializer_class)
+
 
 class FixturesList(TeamsAndFixturesMixin):
     permission_classes = (IsAuthenticated, IsAdminUser,)
@@ -120,7 +128,8 @@ class FixturesList(TeamsAndFixturesMixin):
                 serializer.update(instance=instance, validated_data=serializer.data)
                 return Response(serializer.data)
             except KeyError:
-                raise Http404
+                resp = {"details": "Method \"PUT\" not allowed."}
+                return Response(resp, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, *args, **kwargs):
@@ -129,7 +138,8 @@ class FixturesList(TeamsAndFixturesMixin):
             instance.delete()
             return Response({"detail": f"{instance} deleted"}, status=status.HTTP_202_ACCEPTED)
         except KeyError:
-            raise Http404
+            resp = {"details": "Method \"DELETE\" not allowed."}
+            return Response(resp, status=status.HTTP_400_BAD_REQUEST)
 
 class HomeView(APIView):
     permission_classes = (IsAuthenticated,)
@@ -137,3 +147,24 @@ class HomeView(APIView):
     def get(self, request):
         content = {'message': 'Hello, World!'}
         return Response(content)
+
+
+@api_view(['GET',])
+@permission_classes([IsAuthenticated,])
+def fixtures(request, format=None, *args, **kwargs):
+    model = Fixture
+    serializer_class = FixtureSerializer
+    fixture_type = kwargs['fixture_type'].lower()
+    if fixture_type=='completed':
+        objects = model.objects.filter(date_time__lt=datetime.now())
+    elif fixture_type=='pending':
+        objects = model.objects.exclude(date_time__lt=datetime.now())
+    else:
+        raise Http404
+    serializer = serializer_class(objects, many=True)
+    return Response(serializer.data)
+
+
+
+
+

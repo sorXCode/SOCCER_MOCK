@@ -17,8 +17,8 @@ user_url = [
      path('signup/', views.AccountSignup.as_view(),
          kwargs={'is_staff': False}, name='user_signup'),
      path('login/', views.AccountLogin.as_view(), name='user_login'),
-     path('teams/', views.TeamsList.as_view(), name='teams'),
-
+     path('teams/', views.teams_list, name='user_teams'),
+     path('fixtures/<str:fixture_type>/', views.fixtures, name='user_fixtures'),
 ]
 urlpatterns = [
      *staff_url,
