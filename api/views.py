@@ -56,7 +56,7 @@ class TeamsAndFixturesMixin(APIView):
     def get_object(self, identifier=None):
         raise NotImplementedError
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         return get_serializer_data(model=self.model, serializer=self.serializer_class)
 
     def post(self, request, *args, **kwargs):
@@ -67,17 +67,13 @@ class TeamsAndFixturesMixin(APIView):
         raise NotImplementedError
 
     def delete(self, request, *args, **kwargs):
-        object_name = request.data['name']
-        team = self.get_object(identifier=object_name)
-        team.delete()
-        return Response({"detail": f"{object_name} deleted"}, status=status.HTTP_202_ACCEPTED)
-
+        raise NotImplementedError
 
 class TeamsList(TeamsAndFixturesMixin):
     """
     Creates, Retrieve, update or delete a team instance.
     """
-    permission_classes = (IsAuthenticated, IsAdminUser,)
+    permission_classes = (IsAuthenticated, IsAdminUser)
     model = Team
     serializer_class = TeamSerializer
 
@@ -86,7 +82,8 @@ class TeamsList(TeamsAndFixturesMixin):
             return self.model.objects.get(name=identifier)
         except self.model.DoesNotExist:
             raise Http404
-
+    
+    
     def put(self, request):
         try:
             old_name = request.data['old_name']
@@ -94,6 +91,12 @@ class TeamsList(TeamsAndFixturesMixin):
         except KeyError:
             return parse_object_update_request(request, required_fields=['old_name', 'new_name', ])
         return Response(self.model.update_team_name(old_name=old_name, new_name=new_name))
+    
+    def delete(self, request):
+        object_name = request.data['name']
+        team = self.get_object(identifier=object_name)
+        team.delete()
+        return Response({"detail": f"{object_name} deleted"}, status=status.HTTP_202_ACCEPTED)
 
 
 class FixturesList(TeamsAndFixturesMixin):
@@ -110,12 +113,23 @@ class FixturesList(TeamsAndFixturesMixin):
             raise Http404
 
     def put(self, request, *args, **kwargs):
-        args = {"link_address": request.data['link_address']}
-
-def edit_fixture(request, *args, **kwargs):
-    link_address = args[link_address]
-    return Response(link_address)
-
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            try:
+                instance = self.get_object(identifier=kwargs['link_address'])
+                serializer.update(instance=instance, validated_data=serializer.data)
+                return Response(serializer.data)
+            except KeyError:
+                raise Http404
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object(identifier=kwargs['link_address'])
+            instance.delete()
+            return Response({"detail": f"{instance} deleted"}, status=status.HTTP_202_ACCEPTED)
+        except KeyError:
+            raise Http404
 
 class HomeView(APIView):
     permission_classes = (IsAuthenticated,)

@@ -31,7 +31,6 @@ class UserAccountSerializer(serializers.ModelSerializer):
         return user
 
 
-
 class StaffSerializer(serializers.ModelSerializer):
     class Meta:
         model = Staff
@@ -57,8 +56,10 @@ class TeamSerializer(serializers.ModelSerializer):
         fields = ['name', ]
 
 
-
 class FixtureSerializer(serializers.ModelSerializer):
+
+    home_team = None
+    away_team = None
 
     home_team = serializers.SlugRelatedField(
         slug_field="name", queryset=Team.objects.all())
@@ -69,9 +70,20 @@ class FixtureSerializer(serializers.ModelSerializer):
         model = Fixture
         exclude = ['fixed_at', 'id', ]
 
-    def update(self, instance, **validated_data):
+    def validate_home_team(self, *data):
+        self.home_team = super().validate(data)[0]
+        return self.home_team
+
+    def validate_away_team(self, *data):
+        self.away_team = super().validate(data)[0]
+        return self.away_team
+
+    def update(self, instance, validated_data):
         """
         Update and return an existing `fixture` instance, given the validated data.
         """
-        link_address = validated_data.pop('link_address')
-        return self.Meta.model.updateFixtureEvent(link_address=link_address, details=validated_data)
+
+        validated_data['home_team'] = self.home_team
+        validated_data['away_team'] = self.away_team
+        
+        return self.Meta.model.updateFixtureEvent(instance=instance, details=validated_data)

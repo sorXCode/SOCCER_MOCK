@@ -62,7 +62,7 @@ class Team(models.Model):
 
     def __str__(self):
         return self.name
-
+    
     @classmethod
     def update_team_name(cls, old_name, new_name):
         try:
@@ -100,6 +100,7 @@ class Fixture(models.Model):
         instance.away_team = details['away_team']
         instance.date_time = details['date_time']
         instance.save()
+        
         return instance
 
     def __str__(self):
