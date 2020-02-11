@@ -99,9 +99,10 @@ CACHES = {
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient"
         },
-        "KEY_PREFIX": "example"
+        "KEY_PREFIX": "mockepl"
     }
 }
+# Setting cache time to live to 15minutes
 CACHE_TTL = 60 * 15
 
 # Password validation
